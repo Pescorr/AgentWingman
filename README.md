@@ -8,6 +8,10 @@
 llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、Webhook（汎用の受け口）で、ほかのツール用のアドオンも
 自分で作れます（[ADDONS.md](ADDONS.md)、AI に作らせる場合は [docs/AI_ADDON_GUIDE.md](docs/AI_ADDON_GUIDE.md)）。
 
+![Zoocode の思考内容が画面に流れ、右下のキャラクターとパネルが状態を表示している様子](docs/images/demo.gif)
+
+![右下のキャラクターとパネルの拡大。モード・モデル・思考中の状態・速度・コンテキスト量・接続先が出ている](docs/images/demo-closeup.gif)
+
 ## ダウンロード
 
 [Releases](../../releases) から `AgentWingman-<版>-win.zip` をダウンロードし、好きな場所に展開して `AgentWingman.exe` を起動します
