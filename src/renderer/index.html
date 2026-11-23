@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src blob:">
+<title>AgentWingman</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-mood="offline">
+<div class="stage">
+  <!-- status panel: drag its left / top edge or top-left corner to resize -->
+  <section class="hud hit" id="hud" aria-live="polite">
+    <div class="grip grip-l" data-edge="l"></div>
+    <div class="grip grip-t" data-edge="t"></div>
+    <div class="grip grip-tl" data-edge="tl"></div>
+    <div class="tags">
+      <span class="tag" id="role">—</span>
+      <span class="tag mode" id="mode">—</span>
+      <span class="tag model" id="model">—</span>
+    </div>
+    <div class="state"><i class="lamp"></i><b id="label">接続なし</b><span class="meter" id="tok"></span></div>
+    <div class="tail" id="tail"><span id="tailText"></span></div>
+    <div class="foot">
+      <span id="ctx">CTX —</span>
+      <span class="src" id="src"></span>
+    </div>
+  </section>
+
+  <!-- launcher: shortcut tiles in a bubble while nothing is running -->
+  <section class="launcher hit" id="launcher" aria-label="ランチャー">
+    <div class="lgrid" id="lgrid"></div>
+  </section>
+
+  <!-- character: built-in SVG or an image skin inside .motion; signs are drawn on top -->
+  <div class="pilot hit" id="pilot" title="クリックで合図を消す / ドラッグで移動">
+    <div class="bubble" id="bubble"></div>
+    <div class="motion"><div class="art" id="art"></div></div>
+    <div class="fx fx-dots"><i></i><i></i><i></i></div>
+    <span class="fx fx-mark">!</span>
+    <span class="fx fx-sweat"></span>
+    <span class="fx fx-stars"><i>★</i><i>★</i></span>
+  </div>
+</div>
+<script src="pilot.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

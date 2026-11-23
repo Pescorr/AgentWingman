@@ -1,0 +1,20 @@
+{
+  "name": "マイキャラクター",
+  "author": "",
+  "size": [512, 512],
+  "chromaKey": null,
+  "chromaTolerance": 80,
+  "effects": true,
+  "states": {
+    "idle":     { "frames": ["idle.png", "idle.png", "idle.png", "idle.png", "idle.png", "idle.png", "idle.png", "idle.png", "idle.png", "blink.png"], "fps": 4 },
+    "reading":  { "frames": ["read.png"] },
+    "thinking": { "frames": ["think.png"] },
+    "writing":  { "frames": ["type1.png", "type2.png"], "fps": 8 },
+    "running":  { "frames": ["type1.png", "type2.png"], "fps": 6 },
+    "question": { "frames": ["question.png"] },
+    "approval": { "frames": ["wave1.png", "wave2.png"], "fps": 4 },
+    "complete": { "frames": ["cheer.png"] },
+    "error":    { "frames": ["error.png"] },
+    "offline":  { "frames": ["sleep.png"] }
+  }
+}

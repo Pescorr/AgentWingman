@@ -1,0 +1,12 @@
+node_modules/
+snapshots/
+dist/
+dist-next/
+
+# local only: personal character, dev notes, early prototypes
+characters/pescorr-anim/
+.roo/
+.claude/
+sortie-agent.html
+zoo-watch.js
+strata-watch.js

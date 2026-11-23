@@ -1,0 +1,14 @@
+{
+  "name": "llama.cpp / OpenAI互換リレー",
+  "short": "RELAY",
+  "version": "1.0.0",
+  "description": "llama.cpp（llama-server）・LM Studio・Ollama など OpenAI 互換サーバーとアプリの間に中継役として入り、思考（reasoning_content / <think>）と回答をリアルタイムに表示します。アプリの接続先をこのリレーのポートに変えて使います。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "listenPort": 8090,
+    "upstream": "http://127.0.0.1:8080",
+    "watchSlots": true,
+    "statusPollMs": 3000
+  }
+}

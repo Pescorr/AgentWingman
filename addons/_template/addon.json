@@ -1,0 +1,11 @@
+{
+  "name": "マイアドオン",
+  "short": "MINE",
+  "version": "0.1.0",
+  "description": "ここにアドオンの説明を書きます。トレイのアドオン一覧には name が表示されます。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "intervalMs": 5000
+  }
+}

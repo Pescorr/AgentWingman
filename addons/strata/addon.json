@@ -1,0 +1,13 @@
+{
+  "name": "Strata / SyncStrata",
+  "short": "STRATA",
+  "version": "1.1.0",
+  "description": "ローカルLLMサーバー Strata と、その派生の SyncStrata の状態（読込中・思考中・回答中、速度、モデル名）を表示します。Strata は起動設定に \"api_monitor\": true があれば Thinking・回答の本文もリアルタイムに表示します（SyncStrata は本文の取得に未対応）。url を \"auto\" にすると、SyncStrata が実際に使っているポートや 8080/8081/3080/3081 を自動で探します。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "url": "auto",
+    "busyPollMs": 250,
+    "idlePollMs": 1000
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "agent-wingman",
+  "productName": "AgentWingman",
+  "version": "0.1.0",
+  "description": "A small always-on-top character above the taskbar that shows what AI agents and local LLM servers are doing.",
+  "main": "src/main.js",
+  "private": true,
+  "license": "MIT",
+  "author": "Pescorr",
+  "scripts": {
+    "start": "electron .",
+    "demo": "electron . --demo",
+    "snapshot": "electron . --snapshot",
+    "snapshot:sprite": "electron . --snapshot --skin pilot-sprite",
+    "export-guide": "electron . --export-guide",
+    "snapshot:overlay": "electron . --snapshot-overlay",
+    "test:overlay": "electron . --overlay-matrix && electron . --overlay-e2e",
+    "check:zoo": "node addons/zoocode/source.js --once",
+    "check:strata": "node addons/strata/source.js --once",
+    "test": "node tools/test-all.js",
+    "test:quick": "node tools/test-all.js --quick",
+    "maker": "electron . --maker",
+    "predist": "npm test",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "local.pescorr.agentwingman",
+    "productName": "AgentWingman",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": [
+      "package.json",
+      "src/**",
+      "addons/**",
+      "characters/**",
+      "!characters/pescorr-anim/**",
+      "README.md",
+      "ADDONS.md",
+      "LICENSE"
+    ],
+    "asarUnpack": [
+      "addons/**",
+      "characters/**"
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [{ "target": "zip", "arch": ["x64"] }]
+    }
+  }
+}

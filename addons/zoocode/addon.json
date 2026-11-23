@@ -1,0 +1,13 @@
+{
+  "name": "Zoocode",
+  "short": "ZOO",
+  "version": "1.0.0",
+  "description": "VS Code 拡張の Zoocode / Roo Code のタスクファイルを読み、質問・承認待ち・完了・エラー、モード、サブタスク、コンテキスト圧縮を知らせます。公式の連携機能ではないため、拡張の更新で動かなくなることがあります。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "tasksDir": "auto",
+    "staleSeconds": 180,
+    "approvalGraceMs": 1500
+  }
+}

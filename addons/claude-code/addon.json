@@ -1,0 +1,12 @@
+{
+  "name": "Claude Code",
+  "short": "CLAUDE",
+  "version": "1.0.0",
+  "description": "Claude Code のフックから、作業中・ツール実行・承認待ち・入力待ち・完了・エラー・コンテキスト圧縮・サブエージェントを受け取って表示します。複数セッションを同時に見られます。使うには Claude Code 側にフックの登録が必要です（README.md）。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "port": 8766,
+    "forgetIdleMinutes": 30
+  }
+}

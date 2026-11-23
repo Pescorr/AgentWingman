@@ -1,0 +1,67 @@
+/* Full-screen click-through layer. Styles follow kusa_commenter: scroll (lanes right to left),
+   toast (bottom-right stack), chatlog (bottom-left panel); plus a banner across the middle for signals. */
+:root {
+  --font: 26px;
+  --alpha: .9;
+  --chat-w: 800px;
+  --toast-bottom: 230px;
+  --f: "BIZ UDPGothic", "MS Gothic", "Yu Gothic UI", sans-serif;
+  /* black outline like kusa_commenter's stroke */
+  --stroke: -1.5px 0 #000, 1.5px 0 #000, 0 -1.5px #000, 0 1.5px #000, -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+body.snapshot { background: #26303c; }
+body { font-family: var(--f); font-weight: 700; color: #fff; }
+
+.c { white-space: nowrap; text-shadow: var(--stroke); opacity: var(--alpha); }
+.k-think { color: #8fe3f0; }
+.k-output { color: #ffffff; }
+.k-question { color: #f2a20c; }
+.k-approval { color: #ff8a2a; }
+.k-complete { color: #5be39a; }
+.k-error { color: #ff5a4e; }
+.k-event { color: #ffe14a; }
+.k-status { color: #c8d0da; }
+
+/* scroll: comments flow right to left in lanes */
+.layer { position: absolute; inset: 0; }
+.scroll { position: absolute; left: 0; font-size: var(--font); line-height: 1.2; will-change: transform; }
+
+/* toast: newest at the bottom, stacked upward, fading in and out */
+.toasts { position: absolute; right: 30px; bottom: var(--toast-bottom); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.toast { font-size: calc(var(--font) * .7); padding: 8px 14px; background: rgba(16, 20, 30, .55); border-left: 3px solid currentColor; border-radius: 4px; }
+
+/* chatlog: a panel at the bottom-left, newest line at the bottom */
+.chatlog {
+  position: absolute; left: 15px; bottom: 60px; width: var(--chat-w); max-width: calc(100% - 30px);
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 6px;
+}
+.chat { font-size: calc(var(--font) * .62); white-space: normal; line-height: 1.35; opacity: calc(var(--alpha) * var(--chat-alpha, .85)); animation: chatIn .25s ease-out; }
+@keyframes chatIn { from { transform: translateX(-12px); opacity: 0; } }
+
+/* banner: signals across the middle of the screen */
+.banner { position: absolute; left: 0; right: 0; top: 38%; display: none; pointer-events: none; }
+.banner.show { display: block; }
+.band {
+  position: relative; display: grid; justify-items: center; gap: 6px; padding: 18px 24px 16px;
+  background:
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .0) 0 18px, rgba(0, 0, 0, .18) 18px 36px),
+    linear-gradient(90deg, transparent, var(--bc) 12%, var(--bc) 88%, transparent);
+  border-top: 3px solid #000; border-bottom: 3px solid #000;
+  animation: bandIn .35s cubic-bezier(.7, 0, .2, 1) both;
+}
+.band::before, .band::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: var(--bc); }
+.band::before { top: -9px; }
+.band::after { bottom: -9px; }
+.band b { font-size: calc(var(--font) * 2.4); letter-spacing: .12em; color: #fff; text-shadow: var(--stroke), 0 0 18px rgba(0, 0, 0, .6); animation: titleIn .5s .15s cubic-bezier(.2, .9, .3, 1.2) both; }
+.band span { font-size: calc(var(--font) * .8); color: #fff; text-shadow: var(--stroke); max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: titleIn .5s .3s ease-out both; }
+.banner.out .band { animation: bandOut .3s ease-in both; }
+@keyframes bandIn { from { transform: scaleY(0); filter: brightness(3); } }
+@keyframes bandOut { to { transform: scaleY(0); opacity: 0; } }
+@keyframes titleIn { from { transform: translateX(80px) skewX(-20deg); opacity: 0; } }
+.banner.k-question { --bc: rgba(242, 162, 12, .85); }
+.banner.k-approval { --bc: rgba(255, 122, 26, .85); }
+.banner.k-complete { --bc: rgba(52, 170, 110, .85); }
+.banner.k-error { --bc: rgba(220, 50, 40, .85); }
+.banner.k-event, .banner.k-think, .banner.k-output, .banner.k-status { --bc: rgba(40, 90, 150, .85); }

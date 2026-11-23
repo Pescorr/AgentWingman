@@ -1,0 +1,12 @@
+{
+  "name": "Webhook（汎用）",
+  "short": "HOOK",
+  "version": "1.0.0",
+  "description": "このPCの中だけで受け付ける HTTP 窓口を開き、どんなツールやスクリプトからでもキャラクターに状態・合図を送れるようにします。Claude Code のフックや自作スクリプトとの連携に使えます。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "port": 8765,
+    "idleAfterSeconds": 300
+  }
+}

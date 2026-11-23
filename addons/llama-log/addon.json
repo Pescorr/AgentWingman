@@ -1,0 +1,12 @@
+{
+  "name": "llama.cpp（ログ連携）",
+  "short": "LLAMA",
+  "version": "1.0.0",
+  "description": "llama-server の詳細ログをパイプで受け取り、思考と回答をリアルタイムに表示します。アプリ側の接続先は 8080 のままで、llama-server の起動用 bat に1行足すだけです（README.md）。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "port": 8767,
+    "offlineAfterMs": 6000
+  }
+}
