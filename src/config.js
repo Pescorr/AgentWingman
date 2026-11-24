@@ -26,6 +26,7 @@ const DEFAULTS = {
     enabled: false,
     routes: {                               // which style each kind of content uses: scroll / toast / chatlog / banner / off
       thinking: "scroll",
+      work: "scroll",                       // the panel's gray line: what the agent is doing (e.g. the tool it runs)
       output: "chatlog",
       signal: "banner",                     // question / approval / complete / error
       event: "toast",                       // context compression, subtasks, addon events

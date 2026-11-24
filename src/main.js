@@ -171,7 +171,7 @@ function pushView() {
 
 // ---------- screen overlay (kusa_commenter-style comments across the screen) ----------
 const OVERLAY_STYLES = [["scroll", "ニコニコ風（流れる）"], ["toast", "通知（右下）"], ["chatlog", "チャット欄（左下）"], ["banner", "大きく（画面中央）"], ["off", "出さない"]];
-const OVERLAY_CONTENT = [["thinking", "思考内容"], ["output", "回答"], ["signal", "合図（質問・承認・完了・エラー）"], ["event", "出来事（圧縮・サブタスクなど）"], ["status", "状態の変化"]];
+const OVERLAY_CONTENT = [["thinking", "思考内容"], ["work", "作業内容（実行中のツールなど）"], ["output", "回答"], ["signal", "合図（質問・承認・完了・エラー）"], ["event", "出来事（圧縮・サブタスクなど）"], ["status", "状態の変化"]];
 const SIGNAL_MOODS = new Set(["question", "approval", "complete", "error"]);
 const EVENT_TEXT = { truncation: "コンテキスト圧縮…", "subtask-start": "サブタスク出撃！", "subtask-return": "サブタスク帰還" };
 
@@ -238,10 +238,10 @@ function feedOverlay(v) {
     lastFed[v.tailKind] = v.tail;
     if (added) sendOverlay("feed", { style: r[key], kind: v.tailKind, text: added });
   } else if (!v.tailKind && v.tail && !SIGNAL_MOODS.has(v.mood) && !quietMoods.has(v.mood) && v.tail !== lastFed.work) {
-    // the gray line of the panel (what the agent is doing, e.g. the tool it runs) goes with the thinking,
-    // so Claude Code and Zoocode show more than the panel alone; one comment per new line, not a stream
+    // the gray line of the panel (what the agent is doing, e.g. the tool it runs), so Claude Code and Zoocode
+    // show more than the panel alone; one comment per new line, not a stream
     lastFed.work = v.tail;
-    sendOverlay("item", { style: r.thinking, kind: "work", text: v.tail.length > 80 ? v.tail.slice(0, 79) + "…" : v.tail });
+    sendOverlay("item", { style: r.work, kind: "work", text: v.tail.length > 80 ? v.tail.slice(0, 79) + "…" : v.tail });
   }
   if (!v.tail || quietMoods.has(v.mood)) lastFed = {}; // a new request starts from scratch
 }
@@ -316,7 +316,7 @@ async function runOverlayE2E() {
         chat: document.querySelectorAll(".chat.k-output").length, banner: document.getElementById("banner").classList.contains("show") })`);
   const answer = "17と23と41の合計は81で、平均は27です。計算の手順も書いておきます。まず17と23を足して40、そこに41を足して81になります。";
   for (const style of ["scroll", "toast", "chatlog", "banner"]) {
-    cfg.overlay.routes = { thinking: "off", output: style, signal: "off", event: "off", status: "off" };
+    cfg.overlay.routes = { thinking: "off", work: "off", output: style, signal: "off", event: "off", status: "off" };
     await tap([{ t: "alive" }, { t: "start" }]);
     for (let i = 0; i < 6; i++) { await tap([{ t: "d", r: "考えています。", c: "" }]); await wait(80); }
     let seen = { scroll: 0, toast: 0, chat: 0, banner: false };
@@ -337,9 +337,9 @@ async function runOverlayE2E() {
     overlay.webContents.executeJavaScript("window.awOverlayClear()");
     await new Promise((r) => ipcMain.once("overlay-ready", r));
   }
-  // the gray line of the panel (no tailKind, e.g. Claude Code's tool) goes out in the thinking style:
+  // the gray line of the panel (no tailKind, e.g. Claude Code's tool) goes out in its own style:
   // once per new line, and not while a signal or idle shows it
-  cfg.overlay.routes = { thinking: "scroll", output: "off", signal: "off", event: "off", status: "off" };
+  cfg.overlay.routes = { thinking: "off", work: "scroll", output: "off", signal: "off", event: "off", status: "off" };
   overlayPrev = null;
   lastFed = {};
   const views = [["running", "PowerShell: npm test"], ["running", "PowerShell: npm test"], ["thinking", "Read: src/main.js"],
