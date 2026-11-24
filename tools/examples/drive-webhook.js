@@ -1,5 +1,5 @@
 // Example --drive script for tools/addon-harness.js: plays the part of the watched tool.
-// Here: talks to the Webhook addon the way an outside program would (port from --settings, default 8765).
+// Here: talks to the Webhook addon the way an outside program would (port from --settings, default 8768).
 //   node tools/addon-harness.js addons/webhook --settings '{"port":8790}' --seconds 3 --drive tools/examples/drive-webhook.js
 module.exports = async (log) => {
   const port = Number(process.env.HARNESS_PORT || 8790);

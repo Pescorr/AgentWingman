@@ -68,7 +68,8 @@ if (!QUICK) {
     const lines = (r.stdout || "").split("\n").filter((l) => l.includes("output ->"));
     const ok = lines.length === 4 && lines.every((l) => /"(scroll|toast|chat)":[1-9]|"banner":true/.test(l)) &&
       lines.filter((l) => /toast|banner /.test(l.split("seen")[0])).every((l) => /after the end: 0/.test(l));
-    return { ok, detail: lines.join("\n") };
+    const work = (r.stdout || "").split("\n").find((l) => l.includes("work line ->")) || "work line -> (missing)";
+    return { ok: ok && /: 2 comment/.test(work), detail: lines.concat(work.trim()).join("\n") };
   });
 
   // 6. the character maker turns a transparent video and green-screen stills into a character the mascot loads

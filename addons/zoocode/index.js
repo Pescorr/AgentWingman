@@ -23,6 +23,7 @@ exports.activate = (ctx) => {
       activity: fresh && LIVE.has(z.activity) ? z.activity : "idle",
       signal,
       tail: fresh ? z.lastText : "",
+      tailKind: fresh ? z.lastTextKind : null,
       role: z.taskId ? (z.depth > 0 ? `SUB ${z.depth}` : "MAIN") : null,
       mode: z.mode,
       title: z.title,

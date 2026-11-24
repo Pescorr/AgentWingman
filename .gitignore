@@ -6,6 +6,7 @@ dist-next/
 # local only: personal character, dev notes, early prototypes
 characters/pescorr-anim/
 .roo/
+_backups/
 .claude/
 sortie-agent.html
 zoo-watch.js

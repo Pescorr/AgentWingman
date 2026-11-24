@@ -106,10 +106,12 @@ function deriveState(messages, history = {}) {
   }
 
   let lastText = "";
+  let lastTextKind = null;
   for (let i = messages.length - 1; i >= 0; i--) {
     const m = messages[i];
     if (m.text && (m.say === "reasoning" || m.say === "text" || m.say === "completion_result")) {
       lastText = m.text.slice(-400);
+      lastTextKind = m.say === "reasoning" ? "think" : "output";
       break;
     }
   }
@@ -124,6 +126,7 @@ function deriveState(messages, history = {}) {
     lastTs: last ? last.ts : null,
     contextTokens,
     lastText,
+    lastTextKind,
     messageCount: messages.length,
   };
 }

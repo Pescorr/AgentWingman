@@ -72,7 +72,7 @@ llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、Webhook（
 
 | 内容 | 初期設定 |
 |---|---|
-| 思考内容 | ニコニコ風（文の区切りや約40文字ごとに切って流します） |
+| 思考内容 | ニコニコ風（文の区切りや約40文字ごとに切って流します）。タスクウィンドウに灰色で出る作業内容（Claude Code が実行中のツールなど）も、新しい行が出るたびに灰色のコメントで一緒に出ます |
 | 回答 | チャット欄 |
 | 合図（質問・承認・完了・エラー） | 大きく（画面中央） |
 | 出来事（コンテキスト圧縮・サブタスク・アドオンのイベント） | 通知 |
@@ -189,7 +189,7 @@ LGPL 版の最新安定版をダウンロードし、チェックサムを照合
 |---|---|---|
 | Strata / SyncStrata | 読込中・思考中・回答中、tok/s、モデル名。Strata は Thinking と回答のリアルタイム本文も | Strata の本文表示には起動設定に `"api_monitor": true`。SyncStrata は設定不要（本文は未対応）。SyncStrata がポートを変えても自動で追いかけます |
 | Zoocode | 質問・承認待ち・完了・エラー、モード、サブタスクの深さ、コンテキスト圧縮 | VS Code 拡張 Zoocode / Roo Code。内部ファイルを読むため拡張の更新で動かなくなることがあります |
-| Webhook | `http://127.0.0.1:8765` に送られた状態・合図をそのまま表示 | 送る側（curl、自作スクリプトなど） |
+| Webhook | `http://127.0.0.1:8768` に送られた状態・合図をそのまま表示 | 送る側（curl、自作スクリプトなど） |
 | Claude Code | 承認待ち・入力待ち・完了・エラー・圧縮・サブエージェント。複数セッション対応 | Claude Code へのフック登録（[addons/claude-code/README.md](addons/claude-code/README.md)） |
 | llama.cpp（ログ連携） | 思考と回答のリアルタイム本文、tok/s、CTX。**アプリの接続先は 8080 のまま** | llama-server の起動 bat を AgentWingman 版にする（[addons/llama-log/README.md](addons/llama-log/README.md)） |
 

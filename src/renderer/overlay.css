@@ -17,6 +17,7 @@ body { font-family: var(--f); font-weight: 700; color: #fff; }
 .c { white-space: nowrap; text-shadow: var(--stroke); opacity: var(--alpha); }
 .k-think { color: #8fe3f0; }
 .k-output { color: #ffffff; }
+.k-work { color: #b4bcc6; }
 .k-question { color: #f2a20c; }
 .k-approval { color: #ff8a2a; }
 .k-complete { color: #5be39a; }
@@ -64,4 +65,4 @@ body { font-family: var(--f); font-weight: 700; color: #fff; }
 .banner.k-approval { --bc: rgba(255, 122, 26, .85); }
 .banner.k-complete { --bc: rgba(52, 170, 110, .85); }
 .banner.k-error { --bc: rgba(220, 50, 40, .85); }
-.banner.k-event, .banner.k-think, .banner.k-output, .banner.k-status { --bc: rgba(40, 90, 150, .85); }
+.banner.k-event, .banner.k-think, .banner.k-work, .banner.k-output, .banner.k-status { --bc: rgba(40, 90, 150, .85); }

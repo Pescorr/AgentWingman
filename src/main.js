@@ -237,6 +237,11 @@ function feedOverlay(v) {
     const added = appended(lastFed[v.tailKind] || "", v.tail);
     lastFed[v.tailKind] = v.tail;
     if (added) sendOverlay("feed", { style: r[key], kind: v.tailKind, text: added });
+  } else if (!v.tailKind && v.tail && !SIGNAL_MOODS.has(v.mood) && !quietMoods.has(v.mood) && v.tail !== lastFed.work) {
+    // the gray line of the panel (what the agent is doing, e.g. the tool it runs) goes with the thinking,
+    // so Claude Code and Zoocode show more than the panel alone; one comment per new line, not a stream
+    lastFed.work = v.tail;
+    sendOverlay("item", { style: r.thinking, kind: "work", text: v.tail.length > 80 ? v.tail.slice(0, 79) + "…" : v.tail });
   }
   if (!v.tail || quietMoods.has(v.mood)) lastFed = {}; // a new request starts from scratch
 }
@@ -332,6 +337,16 @@ async function runOverlayE2E() {
     overlay.webContents.executeJavaScript("window.awOverlayClear()");
     await new Promise((r) => ipcMain.once("overlay-ready", r));
   }
+  // the gray line of the panel (no tailKind, e.g. Claude Code's tool) goes out in the thinking style:
+  // once per new line, and not while a signal or idle shows it
+  cfg.overlay.routes = { thinking: "scroll", output: "off", signal: "off", event: "off", status: "off" };
+  overlayPrev = null;
+  lastFed = {};
+  const views = [["running", "PowerShell: npm test"], ["running", "PowerShell: npm test"], ["thinking", "Read: src/main.js"],
+    ["approval", "PowerShell: Remove-Item dist"], ["idle", "Read: src/main.js (old)"]];
+  for (const [mood, tail] of views) { feedOverlay({ mood, label: mood, tail, tailKind: null }); await wait(150); }
+  const work = await overlay.webContents.executeJavaScript(`document.querySelectorAll(".scroll.k-work").length`);
+  console.log(`work line -> scroll: ${work} comment(s) (expected 2)`);
   sock.close();
   addons.stopAll();
   app.quit();

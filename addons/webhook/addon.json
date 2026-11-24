@@ -6,7 +6,7 @@
   "main": "index.js",
   "enabledByDefault": false,
   "settings": {
-    "port": 8765,
+    "port": 8768,
     "idleAfterSeconds": 300
   }
 }

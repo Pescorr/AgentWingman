@@ -123,16 +123,16 @@ exports.activate = (ctx) => {
 
 ## Webhook アドオンの使い方（コードを書かずに連携）
 
-有効にすると `http://127.0.0.1:8765` で受け付けます（ポートは設定で変更可）。
+有効にすると `http://127.0.0.1:8768` で受け付けます（ポートは設定で変更可）。
 このPCの外からは届きません。また、`Content-Type: application/json` 以外は受け付けないので、
 ブラウザで開いた Web ページが勝手に送ることもできません。
 
 ```bash
-curl -X POST http://127.0.0.1:8765/update -H "Content-Type: application/json" -d "{\"activity\":\"thinking\",\"tail\":\"考え中…\",\"mode\":\"build\"}"
+curl -X POST http://127.0.0.1:8768/update -H "Content-Type: application/json" -d "{\"activity\":\"thinking\",\"tail\":\"考え中…\",\"mode\":\"build\"}"
 ```
 
 ```bash
-curl -X POST http://127.0.0.1:8765/signal -H "Content-Type: application/json" -d "{\"kind\":\"complete\",\"text\":\"ビルド完了\"}"
+curl -X POST http://127.0.0.1:8768/signal -H "Content-Type: application/json" -d "{\"kind\":\"complete\",\"text\":\"ビルド完了\"}"
 ```
 
 | パス | 本文 | 内容 |
