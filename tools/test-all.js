@@ -43,7 +43,7 @@ step("bundled characters load (skin.json format)", () => {
 });
 
 // 3. every addon passes the harness (ports chosen so a running AgentWingman does not collide)
-const ADDON_SETTINGS = { webhook: { port: 18765 }, "claude-code": { port: 18766 }, "llama-log": { port: 18767 }, strata: { url: "http://127.0.0.1:1" }, zoocode: {} };
+const ADDON_SETTINGS = { webhook: { port: 18765 }, "claude-code": { port: 18766 }, "llama-log": { port: 18767 }, strata: { url: "http://127.0.0.1:1" }, zoocode: {}, comfyui: { url: "http://127.0.0.1:1" } };
 for (const id of fs.readdirSync(path.join(ROOT, "addons")).filter((d) => !d.startsWith("_"))) {
   step(`addon harness: ${id}`, () => {
     const r = run(process.execPath, ["tools/addon-harness.js", `addons/${id}`, "--settings", JSON.stringify(ADDON_SETTINGS[id] || {}), "--seconds", "2"], 60);
@@ -80,7 +80,7 @@ if (!QUICK) {
     const c = path.join(ROOT, "characters");
     // WebM output needs ffmpeg (PATH or downloaded by the maker); without it that part is skipped, not failed
     const hasFfmpeg = spawnSync("where", ["ffmpeg"], { windowsHide: true }).status === 0 ||
-      fs.existsSync(path.join(os.homedir(), "AppData", "Roaming", "agent-wingman", "tools", "ffmpeg", "ffmpeg.exe"));
+      fs.existsSync(path.join(ROOT, "data", "tools", "ffmpeg", "ffmpeg.exe"));
     const specs = {
       video: { paths: { idle: [path.join(c, "mannequin-anim", "idle.webm")], complete: [path.join(c, "mannequin-anim", "complete.webm")] }, options: { name: "Test Video", fps: 12, video: hasFfmpeg } },
       green: { paths: { idle: [path.join(c, "pilot-sprite", "idle.png")], writing: [path.join(c, "pilot-sprite", "type1.png"), path.join(c, "pilot-sprite", "type2.png")] }, options: { name: "Test Green", fps: 12 } },

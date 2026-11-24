@@ -4,7 +4,11 @@
 // `AgentWingman.exe --agent-wingman-hook`: Claude Code hook forwarder for machines without Node.js.
 // It only relays the hook's stdin to the running AgentWingman and exits: no window, no tray, no lock.
 if (process.argv.includes("--agent-wingman-hook")) {
-  require("../addons/claude-code/hook.js");
+  try {
+    require(require("path").join(require("./data-dir").appRoot(require("electron").app), "addons", "claude-code", "hook.js"));
+  } catch {
+    process.exit(0); // the Claude Code addon was removed: the hook does nothing (and never blocks Claude Code)
+  }
   return; // (CommonJS: stops loading the rest of the app)
 }
 // `AgentWingman.exe --maker`: the character maker, a separate process that shares no code with the mascot
@@ -21,13 +25,19 @@ const { AddonManager } = require("./addons");
 const { combine, DEMO_STATES } = require("./state");
 const skins = require("./skins");
 const log = require("./log");
-const wingmanize = require("../addons/llama-log/wingmanize");
-const ccHooks = require("../addons/claude-code/hooks-setup");
+const dataDirs = require("./data-dir");
 
 const BASE_W = 440, BASE_H = 200;     // layout size at zoom 1
 const MIN_H = 140, MAX_H = 720;       // the window's height sets the zoom (everything scales with it)
 const MIN_LAYOUT_W = 330;             // pilot plus a narrow panel, in layout pixels
 const APP_DIR = path.join(__dirname, "..");
+// the folder with characters\ addons\ data\ (next to the exe; the checkout in dev)
+const ROOT = dataDirs.appRoot(app);
+// helpers that ship inside an addon (Claude Code hook setup, llama bat maker): null when that addon was
+// removed, and the menu items that need them disappear
+function addonModule(id, file) {
+  try { return require(path.join(ROOT, "addons", id, file)); } catch { return null; }
+}
 // rows of the task window (the panel left of the character)
 const PANEL_ROWS = [
   ["tags", "タスク情報（MAIN・モード・モデル）"],
@@ -47,12 +57,12 @@ const argValue = (name) => { const i = process.argv.indexOf(name); return i > 0 
 let win, tray, cfg, cfgFile, addons, overlay = null, overlayPrev = null;
 let drag = null, resize = null, skinWatcher = null, skinReady = null;
 
-// the same settings folder for the dev build and the packaged exe (whose product name differs);
-// --snapshot / --export-guide runs get a throwaway one, so tests never touch (or lock) the user's settings
+// settings live in the "data" folder next to the exe (see data-dir.js); Chromium's own caches go in a
+// subfolder so the user's files stay easy to find. --snapshot / --export-guide runs get a throwaway
+// folder, so tests never touch (or lock) the user's settings
 const TOOL_RUN = SNAPSHOT || EXPORT_GUIDE || SNAPSHOT_OVERLAY || OVERLAY_MATRIX || OVERLAY_E2E;
-app.setPath("userData", TOOL_RUN
-  ? path.join(require("os").tmpdir(), "agent-wingman-tool-run")
-  : path.join(app.getPath("appData"), "agent-wingman"));
+app.setPath("userData", TOOL_RUN ? path.join(require("os").tmpdir(), "agent-wingman-tool-run") : dataDirs.dataDir(app));
+app.setPath("sessionData", path.join(app.getPath("userData"), "cache"));
 // files written by those runs: inside the program folder only in a dev checkout
 const OUT_DIR = app.isPackaged ? app.getPath("userData") : APP_DIR;
 
@@ -385,7 +395,7 @@ async function runOverlaySnapshot() {
 
 function startAddons() {
   addons = new AddonManager({
-    roots: [path.join(APP_DIR, "addons"), path.join(app.getPath("userData"), "addons")],
+    roots: [...new Set([path.join(ROOT, "addons"), dataDirs.userFolder(app, "addons")])],
     getConfig: () => cfg,
     saveConfig: () => persist(),
     log,
@@ -421,7 +431,8 @@ function addLauncherPaths(paths) {
   for (let p of paths) {
     if (!p) continue;
     // a llama-server .bat is registered as its AgentWingman version (made next to it; the original is untouched)
-    if (cfg.launcher.wingmanizeLlamaBats && /\.(bat|cmd)$/i.test(p)) {
+    const wingmanize = addonModule("llama-log", "wingmanize");
+    if (wingmanize && cfg.launcher.wingmanizeLlamaBats && /\.(bat|cmd)$/i.test(p)) {
       try {
         const r = wingmanize.makeWingmanBat(p, { tapRunner: scriptRunner() });
         if (r.status === "created" || r.status === "exists") {
@@ -443,6 +454,8 @@ function addLauncherPaths(paths) {
 async function pickLlamaBat() {
   const r = await dialog.showOpenDialog({ title: "Wingman 版にする llama-server の bat", properties: ["openFile"], filters: [{ name: "バッチファイル", extensions: ["bat", "cmd"] }] });
   if (r.canceled || !r.filePaths[0]) return;
+  const wingmanize = addonModule("llama-log", "wingmanize");
+  if (!wingmanize) return send("notice", "llama.cpp アドオン（addons\\llama-log）が見つかりません");
   try {
     const res = wingmanize.makeWingmanBat(r.filePaths[0], { tapRunner: scriptRunner() });
     log.info("llama bat from the tray:", res.status, res.out);
@@ -510,24 +523,24 @@ ipcMain.on("launcher-menu", (_e, i) => {
   ]).popup({ window: win });
 });
 
+// characters\ or addons\ (next to the exe; under %APPDATA% only when the exe's folder is read-only)
 function openUserFolder(name) {
-  const dir = path.join(app.getPath("userData"), name);
+  const dir = dataDirs.userFolder(app, name);
   fs.mkdirSync(dir, { recursive: true });
   const kit = path.join(dir, "_template");
-  if (!fs.existsSync(kit)) copyDir(path.join(APP_DIR, name, "_template"), kit);
+  if (!fs.existsSync(kit) && fs.existsSync(path.join(ROOT, name, "_template"))) copyDir(path.join(ROOT, name, "_template"), kit);
   shell.openPath(dir);
 }
 
 // ---------- character skins ----------
-// Where characters are looked for; a later folder wins when two have a character with the same name.
-// The packaged exe carries a copy of the characters that existed when it was built, so characters added
-// later must live in one of the other folders (next to the exe, a folder added from the tray, or userData).
+// Where characters are looked for; a later folder wins when two have a character with the same name:
+// characters\ next to the exe (bundled ones and yours), folders added from the tray, and the %APPDATA%
+// fallback when the exe's folder is read-only.
 function skinRoots() {
-  const roots = [path.join(APP_DIR, "characters")];
-  if (app.isPackaged) roots.push(path.join(path.dirname(process.execPath), "characters"));
+  const roots = [path.join(ROOT, "characters")];
   for (const d of cfg.characterDirs || []) if (typeof d === "string" && d) roots.push(d);
-  roots.push(path.join(app.getPath("userData"), "characters"));
-  return roots;
+  roots.push(dataDirs.userFolder(app, "characters"));
+  return [...new Set(roots)];
 }
 
 async function addCharacterDir() {
@@ -677,6 +690,8 @@ function trayIcon() {
 
 // ---------- Claude Code hooks from the tray (edits ~/.claude/settings.json, so always ask first) ----------
 async function claudeHooks(uninstall) {
+  const ccHooks = addonModule("claude-code", "hooks-setup");
+  if (!ccHooks) return;
   const st = ccHooks.status();
   const answer = await dialog.showMessageBox({
     type: "question",
@@ -722,7 +737,9 @@ function showMenu() {
 function trayMenu() {
   const list = skins.listSkins(skinRoots());
   const found = addons ? addons.discover() : [];
-  const hooks = ccHooks.status();
+  const ccHooks = addonModule("claude-code", "hooks-setup");
+  const hooks = ccHooks ? ccHooks.status() : null;
+  const llamaTools = !!addonModule("llama-log", "wingmanize");
   return Menu.buildFromTemplate([
     { label: `AgentWingman ${app.getVersion()}`, enabled: false },
     { type: "separator" },
@@ -740,7 +757,7 @@ function trayMenu() {
           label: "追加したフォルダ",
           submenu: cfg.characterDirs.map((d) => ({ label: `外す: ${d}`, click: () => removeCharacterDir(d) })),
         }] : []),
-        { label: "ユーザー用キャラクターフォルダを開く", click: () => openUserFolder("characters") },
+        { label: "キャラクターフォルダを開く", click: () => openUserFolder("characters") },
         { label: "一覧を更新", click: refreshTray },
       ],
     },
@@ -752,14 +769,14 @@ function trayMenu() {
           click: async (i) => { await addons.setEnabled(a.id, i.checked); refreshTray(); },
         })),
         ...(found.length ? [{ type: "separator" }] : []),
-        {
+        ...(hooks ? [{
           label: `Claude Code のフック（${hooks.installed ? "登録済み" : "未登録"}）`,
           submenu: [
             { label: hooks.installed ? "登録し直す…" : "登録する…", click: () => claudeHooks(false) },
             { label: "外す…", enabled: hooks.installed > 0, click: () => claudeHooks(true) },
           ],
-        },
-        { label: "llama.cpp の bat を Wingman 版にする…", click: pickLlamaBat },
+        }] : []),
+        ...(llamaTools ? [{ label: "llama.cpp の bat を Wingman 版にする…", click: pickLlamaBat }] : []),
         { type: "separator" },
         { label: "アドオンフォルダを開く", click: () => openUserFolder("addons") },
         { label: "設定を開く（config.json の addons）", click: () => shell.openPath(cfgFile) },
@@ -771,7 +788,7 @@ function trayMenu() {
       submenu: [
         { label: "使う", type: "checkbox", checked: cfg.launcher.enabled, click: (i) => { cfg.launcher.enabled = i.checked; saveLauncher(); } },
         { label: `何も動いていないとき自動で出す（${cfg.launcher.idleSeconds}秒後）`, type: "checkbox", checked: cfg.launcher.autoShow, click: (i) => { cfg.launcher.autoShow = i.checked; saveLauncher(); } },
-        { label: "llama.cpp の bat は Wingman 版にして登録", type: "checkbox", checked: cfg.launcher.wingmanizeLlamaBats, click: (i) => { cfg.launcher.wingmanizeLlamaBats = i.checked; saveLauncher(); } },
+        { label: "llama.cpp の bat は Wingman 版にして登録", visible: llamaTools, type: "checkbox", checked: cfg.launcher.wingmanizeLlamaBats, click: (i) => { cfg.launcher.wingmanizeLlamaBats = i.checked; saveLauncher(); } },
         { type: "separator" },
         { label: "アプリ・ファイルを追加…", click: () => pickLauncherPaths("file") },
         { label: "フォルダを追加…", click: () => pickLauncherPaths("folder") },
@@ -906,6 +923,10 @@ ipcMain.on("resize-end", () => {
 
 app.whenReady().then(() => {
   if (EXPORT_GUIDE) return exportGuide();
+  let adopted = false;
+  if (!TOOL_RUN) {
+    try { adopted = dataDirs.adoptOld(app); } catch (e) { console.error("bringing over the old settings failed:", e.message); }
+  }
   cfgFile = path.join(app.getPath("userData"), "config.json");
   cfg = loadConfig(cfgFile);
   if (SNAPSHOT_OVERLAY) return runOverlaySnapshot();
@@ -916,12 +937,14 @@ app.whenReady().then(() => {
     log.init(path.join(app.getPath("userData"), "logs"));
     log.info(`AgentWingman ${app.getVersion()} start (electron ${process.versions.electron}, ${app.isPackaged ? "packaged" : "dev"})`, "app:", APP_DIR);
     log.info("config:", cfgFile, "| addons:", Object.entries(cfg.addons || {}).map(([k, v]) => `${k}=${v.enabled ? "on" : "off"}`).join(", ") || "none");
+    if (adopted) log.info("copied settings, characters and addons from", dataDirs.legacyDir(app));
     // write it back once: fills in new defaults, converts older formats, and proves saving works
     if (persist()) log.info("config saved");
   }
   createWindow();
   if (!DEMO && !SNAPSHOT) startAddons();
   if (!SNAPSHOT) { buildTray(); applyOverlay(); }
+  if (adopted) setTimeout(() => send("notice", "以前の設定・キャラクター・アドオンを引き継ぎました"), 2500);
 });
 app.on("before-quit", () => { if (addons) addons.stopAll(); });
 app.on("window-all-closed", () => app.quit());

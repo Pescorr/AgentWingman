@@ -177,6 +177,7 @@ node tools/addon-harness.js addons/<id> --settings "{\"port\":8799}" --seconds 8
 | `claude-code` | B（フック） | Claude Code の 13 種類のフック | セッションごとに状態を持つ。フック登録は `hooks-setup.js`（バックアップ付き） |
 | `zoocode` | D（ファイル監視） | VS Code 拡張のタスクファイル | 書き込み途中の JSON を想定して再試行。自動承認の誤検出を猶予時間で防ぐ |
 | `webhook` | E（受け取り） | 外部からの HTTP | `Content-Type: application/json` 以外を拒否して、Web ページからの送信を防ぐ |
+| `comfyui` | A（ポーリング） | `/api/jobs`、`/queue`、`/history/{id}`、`/system_stats` | 文章ではない相手。ワークフローのグラフからノードの種類と値を読んで文章を作る（`describe.js`） |
 
 ---
 
@@ -189,6 +190,7 @@ node tools/addon-harness.js addons/<id> --settings "{\"port\":8799}" --seconds 8
 | llama.cpp（llama-server） | `/slots`（`is_processing`）、`--metrics` で `/metrics` | API では取得不可。`-v` のログに `streamed chunk: data: {...}` | なし | `launch_slot_` で開始、`slot release:` で終了 |
 | Claude Code | フック | `Stop` の `last_assistant_message`（最後の返答のみ） | `PermissionRequest`・`Notification`（`permission_prompt` / `idle_prompt`） | 13 種類のフックを `async` で登録 |
 | Zoocode / Roo Code | タスクフォルダの `ui_messages.json` | 確定したメッセージのみ（途中経過は書かれない） | `ask: followup` / `command` / `tool` / `completion_result` | 拡張の更新で形式が変わる可能性 |
+| ComfyUI | `/api/jobs?status=in_progress` / `pending`（0.3.7x 以降。古い版は `/prompt` の `queue_remaining` と `/queue`） | なし（実行中のグラフは `/queue` にあり、ここから文章を作る） | 終わったジョブの `/history/{id}` の `execution_error` / `execution_interrupted` | ステップの進み具合は WebSocket でジョブを出したクライアントにだけ送られる（`server.py` `send_json` の `sid`）。同じ `clientId` で接続するとブラウザ側の接続が外れるので使わない。`/queue` は待ち行列の全グラフを含み数 MB になるため、ジョブが変わったときだけ読む |
 
 新しく調べたら、この表に追記すること。
 

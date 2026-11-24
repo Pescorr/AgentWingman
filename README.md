@@ -5,7 +5,7 @@
 
 ウィンドウを閉じてゲームをしていても、「今どうなっているか」「呼ばれているか」が一目で分かることを目的にしています。
 何を見張るかは **アドオン** で決まります。同梱は Strata / SyncStrata（ローカル LLM サーバー）、Claude Code、
-llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、Webhook（汎用の受け口）で、ほかのツール用のアドオンも
+llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、ComfyUI（画像・動画生成。何を作っているかを文章にして表示）、Webhook（汎用の受け口）で、ほかのツール用のアドオンも
 自分で作れます（[ADDONS.md](ADDONS.md)、AI に作らせる場合は [docs/AI_ADDON_GUIDE.md](docs/AI_ADDON_GUIDE.md)）。
 
 ![Zoocode の思考内容が画面に流れ、右下のキャラクターとパネルが状態を表示している様子](docs/images/demo.gif)
@@ -15,7 +15,18 @@ llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、Webhook（
 ## ダウンロード
 
 [Releases](../../releases) から `AgentWingman-<版>-win.zip` をダウンロードし、好きな場所に展開して `AgentWingman.exe` を起動します
-（Windows 10 / 11、64bit）。インストールは不要で、Node.js も要りません。消すときはフォルダと `%APPDATA%\agent-wingman\` を削除します。
+（Windows 10 / 11、64bit）。インストールは不要で、Node.js も要りません。
+すべてがこのフォルダの中で完結するので（ポータブル）、消すときはフォルダごと削除するだけです。
+
+```
+AgentWingman\
+  AgentWingman.exe
+  characters\   キャラクター（同梱のものも、自分で入れたもの・メーカーで作ったものもここ）
+  addons\       アドオン（同梱のものも自作のものもここ。使わないものはフォルダごと消してかまいません）
+  data\         アプリが自分で管理するもの（設定 config.json、ログ、キャッシュ、ダウンロードした ffmpeg）
+  resources\    プログラム本体（触らないでください）
+  （そのほかの dll などは Electron の部品です）
+```
 署名していないので、初回は Windows SmartScreen の「詳細情報 → 実行」が必要な場合があります。
 
 ## キャラクターの合図
@@ -102,9 +113,17 @@ npm run dist
 ```
 
 `dist\AgentWingman-<版>-win.zip`（約115MB）と、展開済みの `dist\win-unpacked\` ができます。
+`dist\win-unpacked\` で試していた設定（`data\`）と、自分で入れたキャラクター・アドオンは、作り直しても残ります
+（`tools/dist-keep.js` が退避して戻します。zip には入りません）。
 zip を好きな場所に展開して `AgentWingman.exe` を起動します。Node.js やこのフォルダが無くても動きます。
 
-- 設定・ログ・自作キャラクター・自作アドオンは開発版と同じ `%APPDATA%\agent-wingman\` を使います（開発版と同時には起動できません）
+- フォルダの構成は「ダウンロード」の図のとおりです（開発版ではこのフォルダの `characters\` `addons\` `data\`）。
+  フォルダごとコピーすれば設定ごと持ち運べます。exe を書き込みできない場所（Program Files など）に置いたときだけ、
+  設定と自分のキャラクター・アドオンに `%APPDATA%\agent-wingman\` を使います
+- 以前の版で使っていた `%APPDATA%\agent-wingman\` の設定・キャラクター・アドオンは、初回起動時にこのフォルダへコピーして引き継ぎます
+  （元のフォルダは残るので、不要なら削除してください）
+- 以前の版から更新したときは、Claude Code のフック（トレイ → アドオン → Claude Code のフック → 登録し直す…）と
+  llama.cpp の Wingman 版 bat（作り直し）を一度やり直してください。アドオンの場所が変わったためです
 - 署名していないので、初回は「Windows によって PC が保護されました」と出ることがあります。「詳細情報」→「実行」で起動できます
 - **Node.js は不要です。** Claude Code のフックと llama.cpp の `tap.js` は、Node.js が入っていればそれで、
   無ければ `AgentWingman.exe` 自身で動かします（トレイから登録・作成した場合）
@@ -124,7 +143,7 @@ Wingman 版は元の bat のコピーなので、あとで元の bat を書き�
 
 ## ログ
 
-`%APPDATA%\agent-wingman\logs\wingman.log`（トレイ → ログを開く）。起動情報、設定の保存、アドオンの開始・停止・エラー、
+`data\logs\wingman.log`（トレイ → ログを開く）。起動情報、設定の保存、アドオンの開始・停止・エラー、
 キャラクターの読み込み、画面側のエラーを記録します。会話の内容（依頼・思考・回答）は記録しません。
 512KB を超えると `wingman.1.log` に移して新しく始めます。設定の保存に失敗したときは吹き出しでも知らせます。
 
@@ -167,9 +186,9 @@ start.cmd        # または npm start
 **動画（透過 WebM）でも書き出せます**（おすすめ。なめらかで軽い。PNG は予備として一緒に残ります）。
 これには ffmpeg が必要で、AgentWingman には同梱していません。PATH に ffmpeg があればそれを使い、無ければメーカーの
 「ffmpeg をダウンロードして動画を作れるようにする」ボタンで入手できます（確認画面のあと、github.com/BtbN/FFmpeg-Builds の
-LGPL 版の最新安定版をダウンロードし、チェックサムを照合して `%APPDATA%\agent-wingman\tools\ffmpeg\` に置きます。約160MB）。
+LGPL 版の最新安定版をダウンロードし、チェックサムを照合して `data\tools\ffmpeg\` に置きます。約160MB）。
 アプリ内蔵の Chromium は透過付きの動画を書き出せない（WebCodecs のアルファ非対応）ため、ffmpeg を使っています。
-できたキャラクターはユーザー用キャラクターフォルダに保存され、動いている AgentWingman が自動で切り替えます。
+できたキャラクターは `characters\` に保存され、動いている AgentWingman が自動で切り替えます。
 
 キャラクターメーカーは本体とは別のプロセスで動き、本体のコードを共有しません（つながりはキャラクターの形式
 `skin.json` の `"format": 1` だけ）。作成中に本体が重くなったり、メーカーが落ちて本体が止まったりすることはありません。
@@ -178,10 +197,8 @@ LGPL 版の最新安定版をダウンロードし、チェックサムを照合
 
 | 場所 | 用途 |
 |---|---|
-| アプリに同梱の `characters\` | exe 版では、exe を作った時点のものが入っています（あとから足しても exe には入りません） |
-| exe と同じフォルダの `characters\` | 配布した exe の隣に置くだけで使えます（exe 版のみ） |
+| exe と同じフォルダの `characters\`（トレイ → キャラクターの種類 → キャラクターフォルダを開く） | 同梱のキャラクター、自分で入れたもの、キャラクターメーカーで作ったもの |
 | トレイ → キャラクターの種類 → **キャラクターを探すフォルダを追加…** で追加したフォルダ | SpriteForge_Wingman の出力先など、好きなフォルダ。キャラクターのフォルダそのものを選ぶと、その親フォルダを追加してそのキャラクターに切り替えます |
-| `%APPDATA%\agent-wingman\characters\`（ユーザー用キャラクターフォルダを開く） | 開発版・exe 版で共通の置き場所 |
 - 多コマ PNG・透過動画（WebM）にも対応しています。ComfyUI で作る場合は SpriteForge_Wingman（ComfyUI 用の別ツール）を使います
 
 ## 同梱アドオン
@@ -200,7 +217,7 @@ LGPL 版の最新安定版をダウンロードし、チェックサムを照合
 
 ## 設定
 
-設定ファイルは `%APPDATA%\agent-wingman\config.json` です（トレイ → アドオン → 設定を開く）。変更後はアプリを再起動してください。
+設定ファイルは `data\config.json` です（トレイ → アドオン → 設定を開く）。変更後はアプリを再起動してください。
 
 | キー | 既定値 | 内容 |
 |---|---|---|
@@ -227,14 +244,16 @@ src/addons.js        アドオンの発見・起動・停止と ctx の提供
 src/state.js         全アドオンの報告を1つの表示にまとめる
 src/skins.js         画像キャラクター（skin.json + ポーズ画像 / スプライトシート）の読み込み
 src/config.js        設定の読み書き（旧形式からの移行を含む）
+src/data-dir.js      フォルダの構成（exe の隣の characters\ addons\ data\）と、以前の版からの引き継ぎ
 src/preload.js       画面とメインプロセスの橋渡し
 src/renderer/        パネル、キャラクター（標準は SVG の pilot.js）、効果音（Web Audio で合成）、見本書き出し用 guide.html
 addons/              アドオン。_template は雛形
 characters/          キャラクター。_template は作成キット、pilot-sprite はサンプル
 ```
 
-アドオンとキャラクターは、アプリ付属のフォルダと `%APPDATA%\agent-wingman\` 内の同名フォルダの両方から探します
-（同じ名前なら後者が優先）。
+exe 版では `addons/` と `characters/` は `resources\` の中ではなく exe の隣に置かれ（package.json の `extraFiles`）、
+アプリはそこから読み込みます。同梱アドオンの一部を消しても動くよう、本体はアドオンのファイルを直接読み込みません
+（Claude Code のフック登録と llama.cpp の bat 作成は、そのアドオンがあるときだけトレイに出ます）。
 
 ## ライセンス
 

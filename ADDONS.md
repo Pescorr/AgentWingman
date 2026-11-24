@@ -19,9 +19,10 @@ AgentWingman 本体は「キャラクターとパネル」だけを持ち、**�
 | `webhook` | このPCの中だけの HTTP 窓口。どんなツールからでも状態と合図を送れる | オフ |
 | `claude-code` | Claude Code のフックから、承認待ち・入力待ち・完了・エラー・圧縮・サブエージェントを受け取る（[説明](addons/claude-code/README.md)） | オフ |
 | `llama-log` | llama-server の詳細ログをパイプで受け取り、思考と回答をリアルタイムに表示。アプリの接続先は変えない（[説明](addons/llama-log/README.md)） | オフ |
+| `comfyui` | ComfyUI が何を作っているか（画像／動画、モデル、サイズ、ステップ数、プロンプト冒頭）を文章にして表示。経過時間・順番待ち・完了・エラーも（[説明](addons/comfyui/README.md)） | オフ |
 
 休止中のアドオン: `addons/_disabled-openai-relay`（LM Studio・Ollama などとアプリの間に入る中継役。
-[説明](addons/_disabled-openai-relay/README.md)）。フォルダ名が `_` で始まるので読み込まれません。
+[説明](addons/_disabled-openai-relay/README.md)）。フォルダ名が `_` で始まるので読み込まれません（exe 版には入っていません）。
 使うときは `openai-relay` に名前を戻してください。
 
 トレイのアイコン → アドオン で、チェックを付けるとその場で起動し、外すと止まります。
@@ -34,9 +35,9 @@ addons\<アドオンID>\
   index.js     activate(ctx) を書く
 ```
 
-置き場所は、アプリ付属の `addons\` と、ユーザー用の `%APPDATA%\agent-wingman\addons\`
-（トレイ → アドオン → アドオンフォルダを開く）の2か所です。同じ ID なら後者が優先されます。
-フォルダ名の先頭が `_` のもの（`_template` など）は読み込まれません。
+置き場所は `AgentWingman.exe` と同じフォルダの `addons\`（トレイ → アドオン → アドオンフォルダを開く）です。
+同梱のアドオンも自作のアドオンもここに並びます。使わない同梱アドオンはフォルダごと消してもかまいません（アプリはそれ抜きで動きます）。
+フォルダ名の先頭が `_` のもの（`_template` と、アドオン共通の部品 `_lib`）は読み込まれません。`_lib` は消さないでください。
 
 `addons\_template` をコピーして名前を変えるのが一番早い始め方です。
 

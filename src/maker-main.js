@@ -12,17 +12,17 @@ const FORMAT = 1;
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
 const TEST_SPEC = argValue("--maker-test"); // a JSON file: { paths: { state: [file, ...] }, options: {...} }
 
-// same settings folder as the mascot (characters are saved under it); tests use a throwaway one
-app.setPath("userData", TEST_SPEC
-  ? path.join(os.tmpdir(), "agent-wingman-tool-run")
-  : path.join(app.getPath("appData"), "agent-wingman"));
+// same settings folder as the mascot (it decides where characters are saved); tests use a throwaway one
+const dataDirs = require("./data-dir");
+app.setPath("userData", TEST_SPEC ? path.join(os.tmpdir(), "agent-wingman-tool-run") : dataDirs.dataDir(app));
+app.setPath("sessionData", path.join(app.getPath("userData"), "cache"));
 
 const STATE = /^(idle|reading|thinking|writing|running|question|approval|complete|error|offline)$/;
 const FILE = /^[a-z]+_\d{3}\.png$/;
 
 function folderFor(name) {
   const ascii = name.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  const root = path.join(app.getPath("userData"), "characters");
+  const root = dataDirs.userFolder(app, "characters");
   const base = `${ascii || "chara"}-anim`;
   let dir = path.join(root, base), n = 2;
   while (fs.existsSync(dir)) dir = path.join(root, `${base}-${n++}`); // never overwrite an existing character

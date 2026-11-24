@@ -1,0 +1,15 @@
+{
+  "name": "ComfyUI",
+  "short": "COMFY",
+  "version": "1.0.0",
+  "description": "画像・動画生成の ComfyUI が何を作っているか（画像／動画、モデル、サイズ、ステップ数、入力画像、プロンプトの冒頭）を文章にして表示し、経過時間と順番待ちの件数、キューが空になったときの完了・エラーを知らせます。ComfyUI の設定は変えません（読み取りのみ）。url を \"auto\" にすると 8188 / 8000 / 8189 を探します。",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "settings": {
+    "url": "auto",
+    "busyPollMs": 1000,
+    "idlePollMs": 2000,
+    "promptChars": 40,
+    "eventEachJob": true
+  }
+}

@@ -2,6 +2,8 @@ node_modules/
 snapshots/
 dist/
 dist-next/
+dist-keep/
+data/
 
 # local only: personal character, dev notes, early prototypes
 characters/pescorr-anim/

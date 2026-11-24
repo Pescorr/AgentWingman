@@ -50,7 +50,7 @@ AgentWingman のキャラクターは「ポーズ画像を数枚」用意する�
 3. `skin.json` の `name` を書き換える。緑背景なら `"chromaKey": "#00ff00"` にする
 4. タスクトレイのアイコン → キャラクター → 一覧を更新 → 作ったキャラクターを選ぶ
 
-置き場所はトレイの「キャラクターフォルダを開く」で開く場所（`%APPDATA%\agent-wingman\characters\`）です。
+置き場所はトレイの「キャラクターフォルダを開く」で開く場所（AgentWingman.exe と同じフォルダの `characters\`）です。
 選択中のキャラクターは、画像や `skin.json` を保存すると即座に反映されます。
 
 ## skin.json の書き方

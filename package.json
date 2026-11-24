@@ -21,7 +21,7 @@
     "test:quick": "node tools/test-all.js --quick",
     "maker": "electron . --maker",
     "predist": "npm test",
-    "dist": "electron-builder --win"
+    "dist": "node tools/dist-keep.js save && electron-builder --win && node tools/dist-keep.js restore"
   },
   "devDependencies": {
     "electron": "33.2.1",
@@ -34,16 +34,14 @@
     "files": [
       "package.json",
       "src/**",
-      "addons/**",
-      "characters/**",
-      "!characters/pescorr-anim/**",
       "README.md",
       "ADDONS.md",
       "LICENSE"
     ],
-    "asarUnpack": [
-      "addons/**",
-      "characters/**"
+    "extraFiles": [
+      { "from": "addons", "to": "addons", "filter": ["**/*", "!_disabled-*/**"] },
+      { "from": "characters", "to": "characters", "filter": ["_template/**", "pilot-sprite/**", "mannequin-anim/**"] },
+      { "from": ".", "to": ".", "filter": ["README.md", "LICENSE"] }
     ],
     "win": {
       "icon": "build/icon.png",
