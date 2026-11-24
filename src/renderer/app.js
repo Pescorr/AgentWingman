@@ -83,11 +83,13 @@ function keyOut(px, hex, tol) {
   }
 }
 
-async function toUrl(img, s) {
-  const blob = new Blob([img.data], { type: img.mime });
+// the character's files come from wingman-skin:// as they are needed; only chroma-keyed images are read
+// up front, because their background has to be removed first
+async function toUrl(name, img, s) {
+  const url = s.base + name.split("/").map(encodeURIComponent).join("/");
   // videos carry their own transparency; GIFs would lose their animation through the canvas
-  if (!s.chromaKey || img.mime === "image/gif" || img.mime.startsWith("video/")) return URL.createObjectURL(blob);
-  const bmp = await createImageBitmap(blob);
+  if (!s.chromaKey || img.mime === "image/gif" || img.mime.startsWith("video/")) return url;
+  const bmp = await createImageBitmap(await (await fetch(url)).blob());
   const c = document.createElement("canvas");
   c.width = bmp.width; c.height = bmp.height;
   const g = c.getContext("2d");
@@ -100,8 +102,9 @@ async function toUrl(img, s) {
 
 async function setSkin(s) {
   clearInterval(frameTimer);
-  for (const u of skinUrls.values()) URL.revokeObjectURL(u);
+  for (const u of skinUrls.values()) if (u.startsWith("blob:")) URL.revokeObjectURL(u);
   skinUrls = new Map();
+  preloaded = new Map();
   playing = null;
   if (!s) {
     skin = null;
@@ -110,7 +113,7 @@ async function setSkin(s) {
     $("art").innerHTML = window.PILOT_SVG;
   } else {
     const urls = new Map();
-    for (const [name, img] of Object.entries(s.images)) urls.set(name, await toUrl(img, s));
+    for (const [name, img] of Object.entries(s.images)) urls.set(name, await toUrl(name, img, s));
     skin = s;
     skinUrls = urls;
     pilot.classList.add("sprite-mode");
@@ -162,8 +165,26 @@ function playState(st) {
   playFrames(st);
 }
 
-function playFrames(st) {
+// frames are loaded per state, when that state first plays without a video, and kept decoded so the
+// loop never flickers; a state that has a video never loads its frames
+let preloaded = new Map(); // url -> HTMLImageElement
+let framesLoading = Promise.resolve();
+function preload(st) {
+  const urls = [...new Set(st.frames.map((f) => skinUrls.get(f.image)))].filter((u) => u && !preloaded.has(u));
+  return Promise.all(urls.map((u) => {
+    const im = new Image();
+    im.src = u;
+    preloaded.set(u, im);
+    return im.decode().catch(() => {});
+  }));
+}
+
+async function playFrames(st) {
   if (!st.frames.length) return;
+  const token = playing;
+  await (framesLoading = preload(st));
+  if (playing !== token || !$("sprite")) return; // the state changed while loading
+  clearInterval(frameTimer);
   frameIdx = 0;
   drawFrame(st.frames[0]);
   if (st.frames.length < 2) return;
@@ -396,7 +417,7 @@ window.addEventListener("unhandledrejection", (e) => console.error("unhandled:",
 // --snapshot helper: resolves once a state's video has a frame on screen (rewound to its first frame when `still`)
 window.awSnapReady = async (still) => {
   const v = document.querySelector("#sprite video");
-  if (!v) return;
+  if (!v) { await framesLoading; await new Promise(requestAnimationFrame); return; }
   if (v.readyState < 2) await new Promise((r) => { v.addEventListener("loadeddata", r, { once: true }); setTimeout(r, 3000); });
   if (still) {
     v.pause();

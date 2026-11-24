@@ -43,14 +43,16 @@ function loadSkin(dir) {
   if (!Number.isInteger(format) || format < 1) throw new Error(`skin.json の format が不正です（${j.format}）`);
   if (format > SUPPORTED_FORMAT) throw new Error(`新しい形式（format ${format}）のキャラクターです。AgentWingman を更新してください`);
   const warnings = [];
-  const images = {}; // file name -> { data, mime }
+  // file name -> { mime }. Only names: the window reads each file itself when it is shown (a character
+  // can have hundreds of frames, and reading them all up front stalled the PC at startup)
+  const images = {};
 
   function image(rel) {
     if (images[rel]) return rel;
     const p = path.resolve(dir, rel);
     if (!p.startsWith(path.resolve(dir) + path.sep)) { warnings.push(`${rel} はキャラクターフォルダの外です`); return null; }
     if (!fs.existsSync(p)) { warnings.push(`${rel} が見つかりません`); return null; }
-    images[rel] = { data: fs.readFileSync(p), mime: MIME[path.extname(p).toLowerCase()] || "image/png" };
+    images[rel] = { mime: MIME[path.extname(p).toLowerCase()] || "image/png" };
     return rel;
   }
 

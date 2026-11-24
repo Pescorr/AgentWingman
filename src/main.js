@@ -17,9 +17,21 @@ if (process.argv.includes("--maker")) {
   return;
 }
 
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, dialog, protocol, net } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { pathToFileURL } = require("url");
+
+// wingman-skin://skin/<n>/<file>: the current character's files, read by the window only when shown.
+// <n> changes with every reload, so edited images are not served from the cache.
+protocol.registerSchemesAsPrivileged([{ scheme: "wingman-skin", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }]);
+let skinDir = null, skinSerial = 0;
+function serveSkinFile(req) {
+  const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/\d+\//, "");
+  const p = skinDir && path.resolve(skinDir, rel);
+  if (!p || !p.startsWith(path.resolve(skinDir) + path.sep)) return new Response("", { status: 404 });
+  return net.fetch(pathToFileURL(p).toString(), { headers: req.headers });
+}
 const { loadConfig, saveConfig } = require("./config");
 const { AddonManager } = require("./addons");
 const { combine, DEMO_STATES } = require("./state");
@@ -579,7 +591,8 @@ function applySkin(id) {
   try {
     const skin = skins.loadSkin(found.dir);
     log.info("skin loaded:", id, `${Object.keys(skin.images).length} files`, skin.warnings.length ? "warnings: " + skin.warnings.join(" / ") : "");
-    send("skin", skin);
+    skinDir = found.dir;
+    send("skin", { ...skin, base: `wingman-skin://skin/${++skinSerial}/` });
     if (skin.warnings.length) send("notice", skin.warnings[0]);
   } catch (e) {
     log.error("skin load failed:", id, e.message);
@@ -922,6 +935,7 @@ ipcMain.on("resize-end", () => {
 });
 
 app.whenReady().then(() => {
+  protocol.handle("wingman-skin", serveSkinFile);
   if (EXPORT_GUIDE) return exportGuide();
   let adopted = false;
   if (!TOOL_RUN) {
