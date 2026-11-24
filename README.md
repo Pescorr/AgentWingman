@@ -101,7 +101,7 @@ llama.cpp（llama-server のログ）、Zoocode（VS Code 拡張）、Webhook（
 npm run dist
 ```
 
-`dist\AgentWingman-0.1.0-win.zip`（約115MB）と、展開済みの `dist\win-unpacked\` ができます。
+`dist\AgentWingman-<版>-win.zip`（約115MB）と、展開済みの `dist\win-unpacked\` ができます。
 zip を好きな場所に展開して `AgentWingman.exe` を起動します。Node.js やこのフォルダが無くても動きます。
 
 - 設定・ログ・自作キャラクター・自作アドオンは開発版と同じ `%APPDATA%\agent-wingman\` を使います（開発版と同時には起動できません）

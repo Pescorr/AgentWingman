@@ -1,7 +1,7 @@
 {
   "name": "agent-wingman",
   "productName": "AgentWingman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A small always-on-top character above the taskbar that shows what AI agents and local LLM servers are doing.",
   "main": "src/main.js",
   "private": true,
